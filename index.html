@@ -101,12 +101,48 @@
   }
   .rwscore.empty { color: #c8ddf0; }
 
+  /* 總分區 */
+  .totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 10px 12px 0;
+  }
+  .tot-item {
+    background: #fff;
+    border: 1.5px solid #c0d8ee;
+    border-radius: 13px;
+    padding: 11px 8px 10px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(37,99,168,0.06);
+  }
+  .tot-label {
+    font-size: 12px;
+    color: #5a99d0;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .tot-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a3a5c;
+    line-height: 1;
+  }
+  .tot-val.empty { color: #c8ddf0; }
+  .tot-max {
+    font-size: 13px;
+    color: #aac4dc;
+    font-weight: 500;
+    margin-left: 2px;
+  }
+
   /* 結果區 */
   .results {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin: 12px 12px 0;
+    margin: 10px 12px 0;
   }
 
   .res-card {
@@ -188,6 +224,17 @@
 
 <div class="card" id="subjects"></div>
 
+<div class="totals">
+  <div class="tot-item">
+    <div class="tot-label">加權總分</div>
+    <div class="tot-val empty" id="w-sum">—<span class="tot-max">/1800</span></div>
+  </div>
+  <div class="tot-item">
+    <div class="tot-label">總分</div>
+    <div class="tot-val empty" id="u-sum">—<span class="tot-max">/700</span></div>
+  </div>
+</div>
+
 <div class="results">
   <div class="res-card weighted">
     <div class="res-title">加權平均</div>
@@ -215,6 +262,8 @@ const S = [
   {name:"生物", w:3},
 ];
 const TW = S.reduce((a,s)=>a+s.w, 0);
+const MAX_W = TW * 100;       // 加權滿分 = 1800
+const MAX_U = S.length * 100; // 未加權滿分 = 700
 let scores = Array(S.length).fill("");
 
 function render() {
@@ -240,11 +289,18 @@ function calc() {
     const n = parseFloat(v);
     if(!isNaN(n) && v !== "") { ws+=n*S[i].w; wt+=S[i].w; sum+=n; cnt++; }
   });
-  const wEl = document.getElementById("w-avg");
-  const uEl = document.getElementById("u-avg");
+  const wEl    = document.getElementById("w-avg");
+  const uEl    = document.getElementById("u-avg");
+  const wSumEl = document.getElementById("w-sum");
+  const uSumEl = document.getElementById("u-sum");
+
   if(cnt === 0) {
     wEl.textContent="—"; wEl.className="res-num";
     uEl.textContent="—"; uEl.className="res-num";
+    wSumEl.innerHTML = `—<span class="tot-max">/${MAX_W}</span>`;
+    wSumEl.className = "tot-val empty";
+    uSumEl.innerHTML = `—<span class="tot-max">/${MAX_U}</span>`;
+    uSumEl.className = "tot-val empty";
     return;
   }
   const wa=ws/wt, ua=sum/cnt;
@@ -252,6 +308,11 @@ function calc() {
   wEl.className   = "res-num " + (wa>=60 ? "pass" : "fail");
   uEl.textContent = ua.toFixed(2);
   uEl.className   = "res-num " + (ua>=60 ? "pass" : "fail");
+
+  wSumEl.innerHTML = `${ws.toFixed(0)}<span class="tot-max">/${MAX_W}</span>`;
+  wSumEl.className = "tot-val";
+  uSumEl.innerHTML = `${sum.toFixed(0)}<span class="tot-max">/${MAX_U}</span>`;
+  uSumEl.className = "tot-val";
 }
 
 function onScore(i, val, el) {
@@ -275,6 +336,7 @@ function clearAll() {
 }
 
 render();
+calc();
 </script>
 </body>
 </html>
